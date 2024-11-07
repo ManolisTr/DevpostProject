@@ -1,0 +1,212 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource"
+          },
+          "datasetSettings": {
+            "type": "LakehouseTable",
+            "typeProperties": {
+              "table": "fabric_metadata"
+            },
+            "schema": [],
+            "linkedService": {
+              "name": "DEV_Ingestion_DP_Lakehouse",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "f5c5104e-e3fe-42b5-86fe-952e684e2771",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Tables"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          },
+          "firstRowOnly": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Tables to be loaded",
+        "dependsOn": []
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "items": {
+            "value": "@activity('Tables to be loaded').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "SqlServerSource",
+                  "sqlReaderQuery": {
+                    "value": "@activity('Create select_stm').output.result.exitValue",
+                    "type": "Expression"
+                  },
+                  "partitionOption": "None",
+                  "queryTimeout": "02:00:00",
+                  "datasetSettings": {
+                    "type": "SqlServerTable",
+                    "typeProperties": {
+                      "database": "AdventureWorks"
+                    },
+                    "schema": [],
+                    "externalReferences": {
+                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "LakehouseTableSink",
+                  "tableActionOption": "Append",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "type": "LakehouseTable",
+                    "typeProperties": {
+                      "table": "aw_source_counts"
+                    },
+                    "schema": [],
+                    "linkedService": {
+                      "name": "DEV_Ingestion_DP_Lakehouse",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "f5c5104e-e3fe-42b5-86fe-952e684e2771",
+                          "workspaceId": "00000000-0000-0000-0000-000000000000",
+                          "rootFolder": "Tables"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 3,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Copy counts",
+              "dependsOn": [
+                {
+                  "activity": "Create select_stm",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "e1af7374-cc8f-4365-90d8-0f3ccd14d826",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "table_name": {
+                    "value": {
+                      "value": "@item().SOURCE_TABLE",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "schema_name": {
+                    "value": {
+                      "value": "@item().SOURCE_SCHEMA",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 3,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Create select_stm",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "ForEach1",
+        "dependsOn": [
+          {
+            "activity": "Truncate table",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "35ae1c17-21ec-42a5-92aa-fc95b183ff8e",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "LH": {
+              "value": "DEV_Ingestion_DP_Lakehouse",
+              "type": "string"
+            },
+            "LH_table_name": {
+              "value": "aw_source_counts",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Truncate table",
+        "dependsOn": [
+          {
+            "activity": "Tables to be loaded",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "variables": {
+      "schema_name": {
+        "type": "String"
+      },
+      "table_name": {
+        "type": "String"
+      }
+    }
+  }
+}

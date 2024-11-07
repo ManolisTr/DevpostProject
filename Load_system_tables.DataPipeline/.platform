@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "Load_system_tables"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e17e3e99-cfb7-4322-ac69-886476ddea9f"
+  }
+}

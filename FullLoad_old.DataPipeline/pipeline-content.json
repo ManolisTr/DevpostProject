@@ -1,0 +1,740 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource"
+          },
+          "datasetSettings": {
+            "type": "LakehouseTable",
+            "typeProperties": {
+              "table": "FABRIC_MEATADA"
+            },
+            "schema": [],
+            "linkedService": {
+              "name": "DEV_Ingestion_DP_Lakehouse",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "f5c5104e-e3fe-42b5-86fe-952e684e2771",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Tables"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          },
+          "firstRowOnly": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 3,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Get Tables",
+        "description": "",
+        "dependsOn": [
+          {
+            "activity": "Initialize log file",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": false,
+          "batchCount": 10,
+          "items": {
+            "value": "@activity('Get Tables').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "0602e779-bd83-4057-8cd5-ae917061c46b",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                "parameters": {
+                  "table_name": {
+                    "value": {
+                      "value": "@item().table_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "schema_name": {
+                    "value": {
+                      "value": "@item().schema_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Copy Columns",
+              "dependsOn": [
+                {
+                  "activity": "Insert row into log file",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "SqlServerStoredProcedure",
+              "typeProperties": {
+                "storedProcedureName": "[CTRL].[SP_Load_Full]",
+                "storedProcedureParameters": {
+                  "stg_table": {
+                    "value": {
+                      "value": "@item().stg_table",
+                      "type": "Expression"
+                    },
+                    "type": "String"
+                  },
+                  "table_schema": {
+                    "value": {
+                      "value": "@item().schema_name",
+                      "type": "Expression"
+                    },
+                    "type": "String"
+                  },
+                  "table_name": {
+                    "value": {
+                      "value": "@item().table_name",
+                      "type": "Expression"
+                    },
+                    "type": "String"
+                  }
+                }
+              },
+              "linkedService": {
+                "name": "DW_DEV",
+                "properties": {
+                  "type": "DataWarehouse",
+                  "typeProperties": {
+                    "artifactId": "5d8bbdb3-60f1-4115-b697-bb21134b8787",
+                    "endpoint": "fgm6cdfxlexujcq5ohbjdqfdce-udckoy2gpyyudnpobmz5nhss5m.datawarehouse.fabric.microsoft.com",
+                    "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
+                  },
+                  "annotations": []
+                },
+                "objectId": "5d8bbdb3-60f1-4115-b697-bb21134b8787"
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Transfer tables to DWH",
+              "dependsOn": [
+                {
+                  "activity": "Copy raw data from source system",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                "parameters": {
+                  "status": {
+                    "value": "Succeeded",
+                    "type": "string"
+                  },
+                  "table_name": {
+                    "value": {
+                      "value": "@item().table_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "schema_name": {
+                    "value": {
+                      "value": "@item().schema_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "database": {
+                    "value": "AdventureWorks_DWH",
+                    "type": "string"
+                  },
+                  "task": {
+                    "value": "Transfer to DWH",
+                    "type": "string"
+                  },
+                  "log_id": {
+                    "value": {
+                      "value": "@item().log_id",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "pipeline": {
+                    "value": "Full Load",
+                    "type": "string"
+                  },
+                  "filepath": {
+                    "value": "abfss://Admin_test@onelake.dfs.fabric.microsoft.com/DW_DEV.Lakehouse/Files/",
+                    "type": "string"
+                  },
+                  "filename": {
+                    "value": "tmp_ctrl_log",
+                    "type": "string"
+                  },
+                  "reconciliation_status": {
+                    "value": {
+                      "value": "@activity('Reconciliation Checks').output.result.exitValue",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Log Transfer to DWH",
+              "dependsOn": [
+                {
+                  "activity": "Reconciliation Checks",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                "parameters": {
+                  "table_name": {
+                    "value": {
+                      "value": "@item().table_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "schema_name": {
+                    "value": {
+                      "value": "@item().schema_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "task": {
+                    "value": "Copy Columns",
+                    "type": "string"
+                  },
+                  "status": {
+                    "value": "Running",
+                    "type": "string"
+                  },
+                  "log_id": {
+                    "value": {
+                      "value": "@item().log_id",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "pipeline": {
+                    "value": "Full Load",
+                    "type": "string"
+                  },
+                  "filename": {
+                    "value": "tmp_ctrl_log",
+                    "type": "string"
+                  },
+                  "filepath": {
+                    "value": "abfss://Admin_test@onelake.dfs.fabric.microsoft.com/DEV_Lakehouse.Lakehouse/Files/",
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Insert row into log file",
+              "dependsOn": []
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "45df444b-41c2-498a-89ab-a5c5756d208e",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                "parameters": {
+                  "source_schema": {
+                    "value": {
+                      "value": "@item().schema_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "source_table": {
+                    "value": {
+                      "value": "@item().table_name",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "stg_table": {
+                    "value": {
+                      "value": "@item().stg_table",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "destination_table": {
+                    "value": {
+                      "value": "@concat(item().schema_name, '.', item().table_name)",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Reconciliation Checks",
+              "dependsOn": [
+                {
+                  "activity": "Transfer tables to DWH",
+                  "dependencyConditions": [
+                    "Completed"
+                  ]
+                },
+                {
+                  "activity": "If Condition1",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "IfCondition",
+              "typeProperties": {
+                "expression": {
+                  "value": "@equals(activity('Copy raw data from source system').output.executionDetails[0].status, 'Succeeded')",
+                  "type": "Expression"
+                },
+                "ifTrueActivities": [
+                  {
+                    "type": "TridentNotebook",
+                    "typeProperties": {
+                      "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                      "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                      "parameters": {
+                        "status": {
+                          "value": {
+                            "value": "@activity('Copy raw data from source system').output.executionDetails[0].status",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "table_name": {
+                          "value": {
+                            "value": "@item().table_name",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "schema_name": {
+                          "value": {
+                            "value": "@item().schema_name",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "task": {
+                          "value": "Copy Data to staging table of Lakehouse",
+                          "type": "string"
+                        },
+                        "log_id": {
+                          "value": {
+                            "value": "@item().log_id",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "pipeline": {
+                          "value": "Full Load",
+                          "type": "string"
+                        },
+                        "filename": {
+                          "value": "tmp_ctrl_log",
+                          "type": "string"
+                        },
+                        "filepath": {
+                          "value": "abfss://Admin_test@onelake.dfs.fabric.microsoft.com/DEV_Lakehouse.Lakehouse/Files/",
+                          "type": "string"
+                        },
+                        "rows_cnt": {
+                          "value": {
+                            "value": "@activity('Copy raw data from source system').output.rowsCopied",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "policy": {
+                      "timeout": "0.12:00:00",
+                      "retry": 0,
+                      "retryIntervalInSeconds": 30,
+                      "secureInput": false,
+                      "secureOutput": false
+                    },
+                    "name": "Log Copy Data_copy1",
+                    "dependsOn": []
+                  }
+                ],
+                "ifFalseActivities": [
+                  {
+                    "type": "TridentNotebook",
+                    "typeProperties": {
+                      "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                      "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                      "parameters": {
+                        "status": {
+                          "value": {
+                            "value": "@activity('Copy raw data from source system').output.executionDetails[0].status",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "table_name": {
+                          "value": {
+                            "value": "@item().table_name",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "schema_name": {
+                          "value": {
+                            "value": "@item().schema_name",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "task": {
+                          "value": "Copy Data to staging table of Lakehouse",
+                          "type": "string"
+                        },
+                        "log_id": {
+                          "value": {
+                            "value": "@item().log_id",
+                            "type": "Expression"
+                          },
+                          "type": "string"
+                        },
+                        "pipeline": {
+                          "value": "Full Load",
+                          "type": "string"
+                        },
+                        "filename": {
+                          "value": "tmp_ctrl_log",
+                          "type": "string"
+                        },
+                        "filepath": {
+                          "value": "abfss://Admin_test@onelake.dfs.fabric.microsoft.com/DW_DEV.Lakehouse/Files/",
+                          "type": "string"
+                        },
+                        "rows_cnt": {
+                          "value": "-100",
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "policy": {
+                      "timeout": "0.12:00:00",
+                      "retry": 0,
+                      "retryIntervalInSeconds": 30,
+                      "secureInput": false,
+                      "secureOutput": false
+                    },
+                    "name": "Log Copy Data_copy2",
+                    "dependsOn": []
+                  }
+                ]
+              },
+              "name": "If Condition1",
+              "dependsOn": [
+                {
+                  "activity": "Copy raw data from source system",
+                  "dependencyConditions": [
+                    "Completed"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "SqlServerSource",
+                  "sqlReaderQuery": {
+                    "value": "@json(activity('Copy Columns').output.result.exitValue)['sql_stmt']",
+                    "type": "Expression"
+                  },
+                  "partitionOption": "None",
+                  "queryTimeout": "02:00:00",
+                  "datasetSettings": {
+                    "type": "SqlServerTable",
+                    "typeProperties": {
+                      "database": "AdventureWorks"
+                    },
+                    "schema": [],
+                    "externalReferences": {
+                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "LakehouseTableSink",
+                  "tableActionOption": "Overwrite",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "type": "LakehouseTable",
+                    "typeProperties": {
+                      "table": {
+                        "value": "@concat('stg_', json(activity('Copy Columns').output.result.exitValue)['tbl'])",
+                        "type": "Expression"
+                      }
+                    },
+                    "schema": [],
+                    "linkedService": {
+                      "name": "DEV_Ingestion_DP_Lakehouse",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "04428fdd-b859-4bbe-b9a3-9d1eff092896",
+                          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                          "rootFolder": "Tables"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 3,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Copy raw data from source system",
+              "dependsOn": [
+                {
+                  "activity": "Copy Columns",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "name": "Copy Data Loop",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Get Tables",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "e4e0f19b-5001-4c93-a7a8-fac8daa51ac8",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "filepath": {
+              "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+              "type": "string"
+            },
+            "filename": {
+              "value": "tmp_ctrl_log",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Initialize log file",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "dc64abf3-3d08-4008-be33-2344ba90bbfc",
+          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Aggregate stats",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Copy Data Loop",
+            "dependencyConditions": [
+              "Completed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Script",
+        "typeProperties": {
+          "scripts": [
+            {
+              "text": {
+                "value": "UPDATE [DW_DEV].[CTRL].[FABRIC_METADATA]\nSET VERSION = LH.version\nFROM [DW_DEV].[CTRL].[FABRIC_METADATA] as DWH\nINNER JOIN [DEV_Lakehouse].[dbo].[tmp_fabric_metadata] AS LH\non DWH.DESTINATION_TABLE = LH.DESTINATION_TABLE\nWHERE DWH.VERSION <> LH.version",
+                "type": "Expression"
+              },
+              "type": "Query"
+            }
+          ]
+        },
+        "linkedService": {
+          "name": "DW_DEV",
+          "properties": {
+            "type": "DataWarehouse",
+            "typeProperties": {
+              "artifactId": "5d8bbdb3-60f1-4115-b697-bb21134b8787",
+              "endpoint": "fgm6cdfxlexujcq5ohbjdqfdce-udckoy2gpyyudnpobmz5nhss5m.datawarehouse.fabric.microsoft.com",
+              "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
+            },
+            "annotations": []
+          },
+          "objectId": "5d8bbdb3-60f1-4115-b697-bb21134b8787"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Update CTRL FABRIC_METADATA",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Aggregate stats",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "variables": {
+      "schema_name": {
+        "type": "String"
+      },
+      "table_name": {
+        "type": "String"
+      },
+      "select_stm": {
+        "type": "String"
+      },
+      "stg_table": {
+        "type": "String"
+      },
+      "destination_table": {
+        "type": "String"
+      },
+      "version": {
+        "type": "String"
+      },
+      "LH_name": {
+        "type": "String"
+      },
+      "LH_schema": {
+        "type": "String"
+      },
+      "CopyColumns": {
+        "type": "String"
+      },
+      "CopyData": {
+        "type": "String"
+      },
+      "log_id": {
+        "type": "String"
+      },
+      "rows_cnt": {
+        "type": "String"
+      },
+      "reconciliation_status": {
+        "type": "String"
+      }
+    }
+  }
+}
