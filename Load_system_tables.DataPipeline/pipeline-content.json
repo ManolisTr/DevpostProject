@@ -2,116 +2,59 @@
   "properties": {
     "activities": [
       {
+        "name": "Get system tables name",
+        "description": "",
         "type": "Lookup",
-        "typeProperties": {
-          "source": {
-            "type": "SqlServerSource",
-            "sqlReaderQuery": "SELECT    'INFORMATION_SCHEMA' as schema_name  ,'TABLES' as table_name  Union SELECT   'INFORMATION_SCHEMA' as schema_name  ,'COLUMNS' as table_name   Union SELECT 'SYS' as schema_name ,'PARTITIONS' as table_name UNION SELECT   'SYS' as schema_name   ,'OBJECT_ID' as table_name UNION SELECT 'INFORMATION_SCHEMA' AS schema_name     ,'KEY_COLUMN_USAGE'  as table_name UNION SELECT 'INFORMATION_SCHEMA' AS schema_name  ,'TABLE_CONSTRAINTS'  as table_name",
-            "partitionOption": "None",
-            "queryTimeout": "02:00:00"
-          },
-          "datasetSettings": {
-            "type": "SqlServerTable",
-            "typeProperties": {
-              "database": "AdventureWorks"
-            },
-            "schema": [],
-            "externalReferences": {
-              "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
-            },
-            "annotations": []
-          },
-          "firstRowOnly": false
-        },
+        "dependsOn": [],
         "policy": {
           "timeout": "0.12:00:00",
           "retry": 3,
           "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
+          "secureOutput": false,
+          "secureInput": false
         },
-        "name": "Get system tables name",
-        "description": "",
-        "dependsOn": []
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "sqlReaderQuery": "SELECT    'INFORMATION_SCHEMA' as schema_name  ,'TABLES' as table_name  Union SELECT   'INFORMATION_SCHEMA' as schema_name  ,'COLUMNS' as table_name   Union SELECT 'SYS' as schema_name ,'PARTITIONS' as table_name UNION SELECT   'SYS' as schema_name   ,'OBJECT_ID' as table_name UNION SELECT 'INFORMATION_SCHEMA' AS schema_name     ,'KEY_COLUMN_USAGE'  as table_name UNION SELECT 'INFORMATION_SCHEMA' AS schema_name  ,'TABLE_CONSTRAINTS'  as table_name",
+            "queryTimeout": "02:00:00",
+            "partitionOption": "None"
+          },
+          "firstRowOnly": false,
+          "datasetSettings": {
+            "annotations": [],
+            "type": "SqlServerTable",
+            "schema": [],
+            "typeProperties": {
+              "database": "AdventureWorks"
+            },
+            "externalReferences": {
+              "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
+            }
+          }
+        }
       },
       {
+        "name": "ForEach",
         "type": "ForEach",
+        "dependsOn": [
+          {
+            "activity": "Get system tables name",
+            "dependencyConditions": [
+              "Completed"
+            ]
+          }
+        ],
         "typeProperties": {
-          "isSequential": true,
           "items": {
             "value": "@activity('Get system tables name').output.value",
             "type": "Expression"
           },
+          "isSequential": true,
           "activities": [
             {
-              "type": "Copy",
-              "typeProperties": {
-                "source": {
-                  "type": "SqlServerSource",
-                  "sqlReaderQuery": {
-                    "value": "@json(activity('Load System Tables').output.result.exitValue)['sql_stmt']",
-                    "type": "Expression"
-                  },
-                  "partitionOption": "None",
-                  "queryTimeout": "02:00:00",
-                  "datasetSettings": {
-                    "type": "SqlServerTable",
-                    "typeProperties": {
-                      "database": "AdventureWorks"
-                    },
-                    "schema": [],
-                    "externalReferences": {
-                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
-                    },
-                    "annotations": []
-                  }
-                },
-                "sink": {
-                  "type": "LakehouseTableSink",
-                  "tableActionOption": "OverwriteSchema",
-                  "partitionOption": "None",
-                  "datasetSettings": {
-                    "type": "LakehouseTable",
-                    "typeProperties": {
-                      "table": {
-                        "value": "@json(activity('Load System Tables').output.result.exitValue)['tbl']",
-                        "type": "Expression"
-                      }
-                    },
-                    "schema": [],
-                    "linkedService": {
-                      "name": "DEV_Ingestion_DP_Lakehouse",
-                      "properties": {
-                        "type": "Lakehouse",
-                        "typeProperties": {
-                          "artifactId": "f5c5104e-e3fe-42b5-86fe-952e684e2771",
-                          "workspaceId": "00000000-0000-0000-0000-000000000000",
-                          "rootFolder": "Tables"
-                        },
-                        "annotations": []
-                      }
-                    },
-                    "annotations": []
-                  }
-                },
-                "translator": {
-                  "type": "TabularTranslator",
-                  "typeConversion": true,
-                  "typeConversionSettings": {
-                    "allowDataTruncation": true,
-                    "treatBooleanAsNumber": false
-                  }
-                },
-                "enableStaging": false
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 3,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
               "name": "Copy System tables data",
+              "type": "Copy",
               "dependsOn": [
                 {
                   "activity": "Load System Tables",
@@ -119,13 +62,88 @@
                     "Completed"
                   ]
                 }
-              ]
+              ],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 3,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
+              "typeProperties": {
+                "source": {
+                  "type": "SqlServerSource",
+                  "sqlReaderQuery": {
+                    "value": "@json(activity('Load System Tables').output.result.exitValue)['sql_stmt']",
+                    "type": "Expression"
+                  },
+                  "queryTimeout": "02:00:00",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "annotations": [],
+                    "type": "SqlServerTable",
+                    "schema": [],
+                    "typeProperties": {
+                      "database": "AdventureWorks"
+                    },
+                    "externalReferences": {
+                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
+                    }
+                  }
+                },
+                "sink": {
+                  "type": "LakehouseTableSink",
+                  "tableActionOption": "OverwriteSchema",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "annotations": [],
+                    "linkedService": {
+                      "name": "DEV_Ingestion_DP_Lakehouse",
+                      "properties": {
+                        "annotations": [],
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                          "artifactId": "04428fdd-b859-4bbe-b9a3-9d1eff092896",
+                          "rootFolder": "Tables"
+                        }
+                      }
+                    },
+                    "type": "LakehouseTable",
+                    "schema": [],
+                    "typeProperties": {
+                      "table": {
+                        "value": "@json(activity('Load System Tables').output.result.exitValue)['tbl']",
+                        "type": "Expression"
+                      }
+                    }
+                  }
+                },
+                "enableStaging": false,
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  }
+                }
+              }
             },
             {
+              "name": "Load System Tables",
               "type": "TridentNotebook",
+              "dependsOn": [],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
               "typeProperties": {
-                "notebookId": "36c8dc89-2ce2-4e7b-a2f7-dddd37161d5c",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "cdbc1793-042d-429d-999f-fb9d0f7f7268",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "table_name": {
                     "value": {
@@ -142,49 +160,14 @@
                     "type": "string"
                   }
                 }
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 0,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
-              "name": "Load System Tables",
-              "dependsOn": []
+              }
             }
           ]
-        },
-        "name": "ForEach",
-        "dependsOn": [
-          {
-            "activity": "Get system tables name",
-            "dependencyConditions": [
-              "Completed"
-            ]
-          }
-        ]
+        }
       },
       {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "fbca35f5-861c-4d8b-9e2f-9a4275b49e76",
-          "workspaceId": "00000000-0000-0000-0000-000000000000",
-          "parameters": {
-            "LH": {
-              "value": "DEV_Ingestion_DP_Lakehouse",
-              "type": "string"
-            }
-          }
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
         "name": "Create Tables",
+        "type": "TridentNotebook",
         "dependsOn": [
           {
             "activity": "ForEach",
@@ -192,7 +175,24 @@
               "Succeeded"
             ]
           }
-        ]
+        ],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "95042019-96fb-41f3-98b9-c1f882bf88f1",
+          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+          "parameters": {
+            "LH": {
+              "value": "DEV_Ingestion_DP_Lakehouse",
+              "type": "string"
+            }
+          }
+        }
       }
     ],
     "variables": {

@@ -2,97 +2,26 @@
   "properties": {
     "activities": [
       {
+        "name": "Copy Data Loop",
         "type": "ForEach",
+        "dependsOn": [
+          {
+            "activity": "Get Tables",
+            "dependencyConditions": [
+              "Completed"
+            ]
+          }
+        ],
         "typeProperties": {
-          "isSequential": false,
           "items": {
             "value": "@activity('Get Tables').output.value",
             "type": "Expression"
           },
+          "isSequential": false,
           "activities": [
             {
-              "type": "Copy",
-              "typeProperties": {
-                "source": {
-                  "type": "SqlServerSource",
-                  "sqlReaderQuery": {
-                    "value": "@concat(json(activity('Copy Columns').output.result.exitValue)['sql_stmt'], ' WHERE ModifiedDate > ', 'CONVERT(DATETIME2, ''', item().version, ''' , 120)')",
-                    "type": "Expression"
-                  },
-                  "partitionOption": "None",
-                  "queryTimeout": "02:00:00",
-                  "datasetSettings": {
-                    "type": "SqlServerTable",
-                    "typeProperties": {
-                      "database": "AdventureWorks"
-                    },
-                    "schema": [],
-                    "externalReferences": {
-                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
-                    },
-                    "annotations": []
-                  }
-                },
-                "sink": {
-                  "type": "ParquetSink",
-                  "formatSettings": {
-                    "type": "ParquetWriteSettings",
-                    "enableVertiParquet": true
-                  },
-                  "storeSettings": {
-                    "type": "LakehouseWriteSettings",
-                    "copyBehavior": "PreserveHierarchy"
-                  },
-                  "datasetSettings": {
-                    "type": "Parquet",
-                    "typeProperties": {
-                      "location": {
-                        "type": "LakehouseLocation",
-                        "folderPath": {
-                          "value": "@concat('incremental/AdventureWorks/filename=', item().destination_table)",
-                          "type": "Expression"
-                        },
-                        "fileName": {
-                          "value": "@concat('execution_date=', formatDateTime(utcNow(), 'yyyy-MM-dd'))",
-                          "type": "Expression"
-                        }
-                      },
-                      "compressionCodec": "snappy"
-                    },
-                    "schema": [],
-                    "linkedService": {
-                      "name": "DEV_Ingestion_DP_Lakehouse",
-                      "properties": {
-                        "type": "Lakehouse",
-                        "typeProperties": {
-                          "artifactId": "f5c5104e-e3fe-42b5-86fe-952e684e2771",
-                          "workspaceId": "00000000-0000-0000-0000-000000000000",
-                          "rootFolder": "Files"
-                        },
-                        "annotations": []
-                      }
-                    },
-                    "annotations": []
-                  }
-                },
-                "translator": {
-                  "type": "TabularTranslator",
-                  "typeConversion": true,
-                  "typeConversionSettings": {
-                    "allowDataTruncation": true,
-                    "treatBooleanAsNumber": false
-                  }
-                },
-                "enableStaging": false
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 3,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
               "name": "Copy changes from source system",
+              "type": "Copy",
               "dependsOn": [
                 {
                   "activity": "Copy Columns",
@@ -100,13 +29,109 @@
                     "Completed"
                   ]
                 }
-              ]
+              ],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 3,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
+              "typeProperties": {
+                "source": {
+                  "type": "SqlServerSource",
+                  "sqlReaderQuery": {
+                    "value": "@concat(json(activity('Copy Columns').output.result.exitValue)['sql_stmt'], ' WHERE ModifiedDate > ', 'CONVERT(DATETIME2, ''', item().version, ''' , 120)')",
+                    "type": "Expression"
+                  },
+                  "queryTimeout": "02:00:00",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "annotations": [],
+                    "type": "SqlServerTable",
+                    "schema": [],
+                    "typeProperties": {
+                      "database": "AdventureWorks"
+                    },
+                    "externalReferences": {
+                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
+                    }
+                  }
+                },
+                "sink": {
+                  "type": "ParquetSink",
+                  "storeSettings": {
+                    "type": "LakehouseWriteSettings",
+                    "copyBehavior": "PreserveHierarchy"
+                  },
+                  "formatSettings": {
+                    "type": "ParquetWriteSettings",
+                    "enableVertiParquet": true
+                  },
+                  "datasetSettings": {
+                    "annotations": [],
+                    "linkedService": {
+                      "name": "DEV_Ingestion_DP_Lakehouse",
+                      "properties": {
+                        "annotations": [],
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                          "artifactId": "04428fdd-b859-4bbe-b9a3-9d1eff092896",
+                          "rootFolder": "Files"
+                        }
+                      }
+                    },
+                    "type": "Parquet",
+                    "typeProperties": {
+                      "location": {
+                        "type": "LakehouseLocation",
+                        "fileName": {
+                          "value": "@concat('execution_date=', formatDateTime(utcNow(), 'yyyy-MM-dd'))",
+                          "type": "Expression"
+                        },
+                        "folderPath": {
+                          "value": "@concat('incremental/AdventureWorks/filename=', item().destination_table)",
+                          "type": "Expression"
+                        }
+                      },
+                      "compressionCodec": "snappy"
+                    },
+                    "schema": []
+                  }
+                },
+                "enableStaging": false,
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  }
+                }
+              }
             },
             {
+              "name": "Copy Columns",
               "type": "TridentNotebook",
+              "dependsOn": [
+                {
+                  "activity": "Insert row into log file",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
               "typeProperties": {
-                "notebookId": "77d60379-e5e9-4bfc-bf46-e3bc275098c1",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "0602e779-bd83-4057-8cd5-ae917061c46b",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "table_name": {
                     "value": {
@@ -123,29 +148,22 @@
                     "type": "string"
                   }
                 }
-              },
+              }
+            },
+            {
+              "name": "Insert row into log file",
+              "type": "TridentNotebook",
+              "dependsOn": [],
               "policy": {
                 "timeout": "0.12:00:00",
                 "retry": 0,
                 "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
+                "secureOutput": false,
+                "secureInput": false
               },
-              "name": "Copy Columns",
-              "dependsOn": [
-                {
-                  "activity": "Insert row into log file",
-                  "dependencyConditions": [
-                    "Succeeded"
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "TridentNotebook",
               "typeProperties": {
-                "notebookId": "1483ad91-acfb-40d2-b649-6ed0112f4f11",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "table_name": {
                     "value": {
@@ -189,22 +207,29 @@
                     "type": "string"
                   }
                 }
-              },
+              }
+            },
+            {
+              "name": "Log Transfer to DWH",
+              "type": "TridentNotebook",
+              "dependsOn": [
+                {
+                  "activity": "Reconciliation Checks",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ],
               "policy": {
                 "timeout": "0.12:00:00",
                 "retry": 0,
                 "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
+                "secureOutput": false,
+                "secureInput": false
               },
-              "name": "Insert row into log file",
-              "dependsOn": []
-            },
-            {
-              "type": "TridentNotebook",
               "typeProperties": {
-                "notebookId": "1483ad91-acfb-40d2-b649-6ed0112f4f11",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "status": {
                     "value": {
@@ -262,29 +287,29 @@
                     "type": "string"
                   }
                 }
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 0,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
-              "name": "Log Transfer to DWH",
+              }
+            },
+            {
+              "name": "Delta Loading Statements",
+              "type": "TridentNotebook",
               "dependsOn": [
                 {
-                  "activity": "Reconciliation Checks",
+                  "activity": "Copy changes from source system",
                   "dependencyConditions": [
                     "Succeeded"
                   ]
                 }
-              ]
-            },
-            {
-              "type": "TridentNotebook",
+              ],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
               "typeProperties": {
-                "notebookId": "6475a237-24b1-4bdb-8f1f-e48b5d2bb680",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "e5858bff-e750-4f35-9b13-726c9cdeef9d",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "schema_name": {
                     "value": {
@@ -312,29 +337,35 @@
                     "type": "string"
                   }
                 }
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 0,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
-              "name": "Delta Loading Statements",
+              }
+            },
+            {
+              "name": "Reconciliation Checks",
+              "type": "TridentNotebook",
               "dependsOn": [
                 {
-                  "activity": "Copy changes from source system",
+                  "activity": "Delta Loading Statements",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                },
+                {
+                  "activity": "Log Copy Data",
                   "dependencyConditions": [
                     "Succeeded"
                   ]
                 }
-              ]
-            },
-            {
-              "type": "TridentNotebook",
+              ],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
               "typeProperties": {
-                "notebookId": "6a8d6ba7-aaad-4132-b23c-5d237ff79a02",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "45df444b-41c2-498a-89ab-a5c5756d208e",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "source_schema": {
                     "value": {
@@ -362,35 +393,29 @@
                     "type": "string"
                   }
                 }
-              },
+              }
+            },
+            {
+              "name": "Log Copy Data",
+              "type": "TridentNotebook",
+              "dependsOn": [
+                {
+                  "activity": "Copy changes from source system",
+                  "dependencyConditions": [
+                    "Completed"
+                  ]
+                }
+              ],
               "policy": {
                 "timeout": "0.12:00:00",
                 "retry": 0,
                 "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
+                "secureOutput": false,
+                "secureInput": false
               },
-              "name": "Reconciliation Checks",
-              "dependsOn": [
-                {
-                  "activity": "Delta Loading Statements",
-                  "dependencyConditions": [
-                    "Succeeded"
-                  ]
-                },
-                {
-                  "activity": "Log Copy Data",
-                  "dependencyConditions": [
-                    "Succeeded"
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "TridentNotebook",
               "typeProperties": {
-                "notebookId": "1483ad91-acfb-40d2-b649-6ed0112f4f11",
-                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "notebookId": "a1ef9433-eb62-4734-8fe1-751a45647acd",
+                "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
                 "parameters": {
                   "status": {
                     "value": {
@@ -444,41 +469,25 @@
                     "type": "string"
                   }
                 }
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 0,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
-              "name": "Log Copy Data",
-              "dependsOn": [
-                {
-                  "activity": "Copy changes from source system",
-                  "dependencyConditions": [
-                    "Completed"
-                  ]
-                }
-              ]
+              }
             }
           ]
-        },
-        "name": "Copy Data Loop",
-        "dependsOn": [
-          {
-            "activity": "Get Tables",
-            "dependencyConditions": [
-              "Completed"
-            ]
-          }
-        ]
+        }
       },
       {
+        "name": "Initialize log file",
         "type": "TridentNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
         "typeProperties": {
-          "notebookId": "e4e0f19b-5001-4c93-a7a8-fac8daa51ac8",
-          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "notebookId": "954fcc1d-ef89-40d5-b220-d782081984ca",
+          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
           "parameters": {
             "filepath": {
               "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
@@ -489,54 +498,12 @@
               "type": "string"
             }
           }
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Initialize log file",
-        "dependsOn": []
+        }
       },
       {
-        "type": "Lookup",
-        "typeProperties": {
-          "source": {
-            "type": "DataWarehouseSource",
-            "sqlReaderQuery": "SELECT \n  cast(NEWID() as NVARCHAR(100)) AS log_id\n  , lower(SOURCE_SCHEMA) as schema_name\n  , lower(SOURCE_TABLE) as table_name\n  , 'aw_' + DESTINATION_TABLE as stg_table\n  , DESTINATION_TABLE as destination_table\n  , VERSION as VERSION\n  , LH_NAME AS LH_name\n  , 'dbo'  AS LH_schema\nFROM \n    [DEV_Ingestion_DP_Lakehouse].[dbo].[fabric_metadata]\nwhere ACTIVE = 1 \n  AND LOADING_METHOD = 'Delta';",
-            "partitionOption": "None",
-            "queryTimeout": "02:00:00"
-          },
-          "datasetSettings": {
-            "type": "DataWarehouseTable",
-            "schema": [],
-            "linkedService": {
-              "name": "DW_DEV",
-              "properties": {
-                "type": "DataWarehouse",
-                "typeProperties": {
-                  "artifactId": "5d8bbdb3-60f1-4115-b697-bb21134b8787",
-                  "endpoint": "fgm6cdfxlexujcq5ohbjdqfdce-udckoy2gpyyudnpobmz5nhss5m.datawarehouse.fabric.microsoft.com",
-                  "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
-                },
-                "annotations": []
-              }
-            },
-            "annotations": []
-          },
-          "firstRowOnly": false
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 3,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
         "name": "Get Tables",
         "description": "",
+        "type": "Lookup",
         "dependsOn": [
           {
             "activity": "Initialize log file",
@@ -544,28 +511,45 @@
               "Succeeded"
             ]
           }
-        ]
-      },
-      {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "047c86b5-cb2c-4e4d-b01f-787003f71851",
-          "workspaceId": "00000000-0000-0000-0000-000000000000",
-          "parameters": {
-            "suffix": {
-              "value": "_delta",
-              "type": "string"
-            }
-          }
-        },
+        ],
         "policy": {
           "timeout": "0.12:00:00",
-          "retry": 0,
+          "retry": 3,
           "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
+          "secureOutput": false,
+          "secureInput": false
         },
+        "typeProperties": {
+          "source": {
+            "type": "DataWarehouseSource",
+            "sqlReaderQuery": "SELECT \n  cast(NEWID() as NVARCHAR(100)) AS log_id\n  , lower(SOURCE_SCHEMA) as schema_name\n  , lower(SOURCE_TABLE) as table_name\n  , 'aw_' + DESTINATION_TABLE as stg_table\n  , DESTINATION_TABLE as destination_table\n  , VERSION as VERSION\n  , LH_NAME AS LH_name\n  , 'dbo'  AS LH_schema\nFROM \n    [DEV_Ingestion_DP_Lakehouse].[dbo].[fabric_metadata]\nwhere ACTIVE = 1 \n  AND LOADING_METHOD = 'Delta';",
+            "queryTimeout": "02:00:00",
+            "partitionOption": "None"
+          },
+          "firstRowOnly": false,
+          "datasetSettings": {
+            "annotations": [],
+            "linkedService": {
+              "name": "DW_DEV",
+              "properties": {
+                "annotations": [],
+                "type": "DataWarehouse",
+                "typeProperties": {
+                  "endpoint": "fgm6cdfxlexujcq5ohbjdqfdce-udckoy2gpyyudnpobmz5nhss5m.datawarehouse.fabric.microsoft.com",
+                  "artifactId": "5d8bbdb3-60f1-4115-b697-bb21134b8787",
+                  "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
+                }
+              }
+            },
+            "type": "DataWarehouseTable",
+            "schema": [],
+            "typeProperties": {}
+          }
+        }
+      },
+      {
         "name": "Aggregate stats",
+        "type": "TridentNotebook",
         "dependsOn": [
           {
             "activity": "Copy Data Loop",
@@ -573,22 +557,28 @@
               "Completed"
             ]
           }
-        ]
-      },
-      {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "7e62e0c0-f618-46ff-ad80-71ebc5083a73",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
-        },
+        ],
         "policy": {
           "timeout": "0.12:00:00",
           "retry": 0,
           "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
+          "secureOutput": false,
+          "secureInput": false
         },
+        "typeProperties": {
+          "notebookId": "dc64abf3-3d08-4008-be33-2344ba90bbfc",
+          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+          "parameters": {
+            "suffix": {
+              "value": "_delta",
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
         "name": "Update Fabric Metadata",
+        "type": "TridentNotebook",
         "dependsOn": [
           {
             "activity": "Aggregate stats",
@@ -596,7 +586,18 @@
               "Succeeded"
             ]
           }
-        ]
+        ],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "45c20011-b6bf-4f2b-87bd-1161327960a4",
+          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
+        }
       }
     ],
     "variables": {

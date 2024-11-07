@@ -2,124 +2,48 @@
   "properties": {
     "activities": [
       {
+        "name": "Get system tables name",
+        "description": "",
         "type": "Lookup",
-        "typeProperties": {
-          "source": {
-            "type": "DataWarehouseSource",
-            "sqlReaderQuery": "SELECT SOURCE_SCHEMA as schema_name,\nSOURCE_TABLE as table_name\nfrom CTRL.FABRIC_METADATA ",
-            "partitionOption": "None",
-            "queryTimeout": "02:00:00"
-          },
-          "datasetSettings": {
-            "type": "DataWarehouseTable",
-            "schema": [],
-            "linkedService": {
-              "name": "DW_DEV",
-              "properties": {
-                "type": "DataWarehouse",
-                "typeProperties": {
-                  "artifactId": "5d8bbdb3-60f1-4115-b697-bb21134b8787",
-                  "endpoint": "fgm6cdfxlexujcq5ohbjdqfdce-udckoy2gpyyudnpobmz5nhss5m.datawarehouse.fabric.microsoft.com",
-                  "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
-                },
-                "annotations": []
-              }
-            },
-            "annotations": []
-          },
-          "firstRowOnly": false
-        },
+        "dependsOn": [],
         "policy": {
           "timeout": "0.12:00:00",
           "retry": 3,
           "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
+          "secureOutput": false,
+          "secureInput": false
         },
-        "name": "Get system tables name",
-        "description": "",
-        "dependsOn": []
+        "typeProperties": {
+          "source": {
+            "type": "DataWarehouseSource",
+            "sqlReaderQuery": "SELECT SOURCE_SCHEMA as schema_name,\nSOURCE_TABLE as table_name\nfrom CTRL.FABRIC_METADATA ",
+            "queryTimeout": "02:00:00",
+            "partitionOption": "None"
+          },
+          "firstRowOnly": false,
+          "datasetSettings": {
+            "annotations": [],
+            "linkedService": {
+              "name": "DW_DEV",
+              "properties": {
+                "annotations": [],
+                "type": "DataWarehouse",
+                "typeProperties": {
+                  "endpoint": "fgm6cdfxlexujcq5ohbjdqfdce-udckoy2gpyyudnpobmz5nhss5m.datawarehouse.fabric.microsoft.com",
+                  "artifactId": "5d8bbdb3-60f1-4115-b697-bb21134b8787",
+                  "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb"
+                }
+              }
+            },
+            "type": "DataWarehouseTable",
+            "schema": [],
+            "typeProperties": {}
+          }
+        }
       },
       {
-        "type": "ForEach",
-        "typeProperties": {
-          "isSequential": false,
-          "items": {
-            "value": "@activity('Get system tables name').output.value",
-            "type": "Expression"
-          },
-          "activities": [
-            {
-              "type": "Copy",
-              "typeProperties": {
-                "source": {
-                  "type": "SqlServerSource",
-                  "sqlReaderQuery": {
-                    "value": "@concat('select schemas.name as schema_name,\n                tables.name as table_name, \n                rows as cnt\n          from sys.partitions  as partitions\n          inner \n           join sys.tables     as tables\n             on partitions.object_id = tables.object_id\n          inner \n           join sys.schemas    as schemas\n             on tables.schema_id = schemas.schema_id\n          where lower(schemas.name) = ', '''item().schema_name''', \n            ' and lower(tables.name) = ', '''item().table_name''')",
-                    "type": "Expression"
-                  },
-                  "partitionOption": "None",
-                  "queryTimeout": "02:00:00",
-                  "datasetSettings": {
-                    "type": "SqlServerTable",
-                    "typeProperties": {
-                      "database": "AdventureWorks"
-                    },
-                    "schema": [],
-                    "externalReferences": {
-                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
-                    },
-                    "annotations": []
-                  }
-                },
-                "sink": {
-                  "type": "LakehouseTableSink",
-                  "tableActionOption": "Overwrite",
-                  "partitionOption": "None",
-                  "datasetSettings": {
-                    "type": "LakehouseTable",
-                    "typeProperties": {
-                      "table": "stg_source_cnt_daily"
-                    },
-                    "schema": [],
-                    "linkedService": {
-                      "name": "DEV_Lakehouse",
-                      "properties": {
-                        "type": "Lakehouse",
-                        "typeProperties": {
-                          "artifactId": "f5c5104e-e3fe-42b5-86fe-952e684e2771",
-                          "workspaceId": "00000000-0000-0000-0000-000000000000",
-                          "rootFolder": "Tables"
-                        },
-                        "annotations": []
-                      }
-                    },
-                    "annotations": []
-                  }
-                },
-                "translator": {
-                  "type": "TabularTranslator",
-                  "typeConversion": true,
-                  "typeConversionSettings": {
-                    "allowDataTruncation": true,
-                    "treatBooleanAsNumber": false
-                  }
-                },
-                "enableStaging": false
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 3,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
-              "name": "Copy system data",
-              "dependsOn": []
-            }
-          ]
-        },
         "name": "ForEach",
+        "type": "ForEach",
         "dependsOn": [
           {
             "activity": "Get system tables name",
@@ -127,7 +51,84 @@
               "Completed"
             ]
           }
-        ]
+        ],
+        "typeProperties": {
+          "items": {
+            "value": "@activity('Get system tables name').output.value",
+            "type": "Expression"
+          },
+          "isSequential": false,
+          "activities": [
+            {
+              "name": "Copy system data",
+              "type": "Copy",
+              "dependsOn": [],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 3,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
+              "typeProperties": {
+                "source": {
+                  "type": "SqlServerSource",
+                  "sqlReaderQuery": {
+                    "value": "@concat('select schemas.name as schema_name,\n                tables.name as table_name, \n                rows as cnt\n          from sys.partitions  as partitions\n          inner \n           join sys.tables     as tables\n             on partitions.object_id = tables.object_id\n          inner \n           join sys.schemas    as schemas\n             on tables.schema_id = schemas.schema_id\n          where lower(schemas.name) = ', '''item().schema_name''', \n            ' and lower(tables.name) = ', '''item().table_name''')",
+                    "type": "Expression"
+                  },
+                  "queryTimeout": "02:00:00",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "annotations": [],
+                    "type": "SqlServerTable",
+                    "schema": [],
+                    "typeProperties": {
+                      "database": "AdventureWorks"
+                    },
+                    "externalReferences": {
+                      "connection": "b315030a-0c28-495a-92d7-a6c0c1cabdf7"
+                    }
+                  }
+                },
+                "sink": {
+                  "type": "LakehouseTableSink",
+                  "tableActionOption": "Overwrite",
+                  "partitionOption": "None",
+                  "datasetSettings": {
+                    "annotations": [],
+                    "linkedService": {
+                      "name": "DEV_Ingestion_DP_Lakehouse",
+                      "properties": {
+                        "annotations": [],
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
+                          "artifactId": "04428fdd-b859-4bbe-b9a3-9d1eff092896",
+                          "rootFolder": "Tables"
+                        }
+                      }
+                    },
+                    "type": "LakehouseTable",
+                    "schema": [],
+                    "typeProperties": {
+                      "table": "stg_source_cnt_daily"
+                    }
+                  }
+                },
+                "enableStaging": false,
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     ],
     "variables": {
