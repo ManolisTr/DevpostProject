@@ -49,7 +49,7 @@ This project showcases a real-world solution leveraging **Microsoft Fabric**, **
 - **Microsoft Fabric**: Seamlessly integrates Lakehouse and SQL services.
 - **Azure SQL Database**: Centralized data storage for query and analysis.
 - **AdventureWorks**: Rich on-premise dataset for demonstration.
-- **AI and ML Models**: Enable advanced predictions and insights.
+- **AI**: Enable advanced insights.
 - **Data Factory Pipelines**: Automate data ingestion and processing.
 - **Notebooks**: Enable interactive and advanced transformation workflows.
 
