@@ -20,7 +20,6 @@ This project showcases a real-world solution leveraging **Microsoft Fabric**, **
    - Merges metadata from **Azure SQL Database** and **Lakehouse**.
 
 3. **AI-Driven Insights**:
-   - AI models applied for trend analysis and predictions.
    - Includes reconciliation and validation for data consistency.
 
 4. **Orchestration**:
