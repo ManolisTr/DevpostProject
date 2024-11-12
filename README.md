@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project showcases a real-world solution leveraging **Microsoft Fabric**, **Azure SQL Database**, and AI capabilities. Using data from the **AdventureWorks** database, it integrates ingestion, transformation, and AI-driven analytics to deliver actionable insights and efficient workflows.
+This project showcases a real-world solution leveraging **Microsoft Fabric**, **SQL Database**, and AI capabilities. Using data from the **AdventureWorks** database, it integrates ingestion, transformation, and AI-driven analytics to deliver actionable insights and efficient workflows.
 
 [AdventureWorks Database](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/adventure-works) is used as the on-premise database source, providing a rich dataset for enterprise-level demonstrations.
 
@@ -13,7 +13,7 @@ This project showcases a real-world solution leveraging **Microsoft Fabric**, **
 1. **Data Ingestion**:
    - Data is extracted from the **AdventureWorks** database.
    - Supports **Full and Delta Integration**.
-   - Pipelines built with  **Data Factory Pipelines**.
+   - Pipelines built with  **Data Factory Pipelines and Notebooks**.
 
 2. **Data Transformation**:
    - Utilizes **Notebooks** for transforming and processing delta datasets.
@@ -47,7 +47,7 @@ This project showcases a real-world solution leveraging **Microsoft Fabric**, **
 ## Technologies Used
 
 - **Microsoft Fabric**: Seamlessly integrates Lakehouse and SQL services.
-- **Azure SQL Database**: Centralized data storage for query and analysis.
+- **SQL Database**: Centralized data storage for query and analysis.
 - **AdventureWorks**: Rich on-premise dataset for demonstration.
 - **AI**: Enable advanced insights.
 - **Data Factory Pipelines**: Automate data ingestion and processing.
