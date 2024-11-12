@@ -12,12 +12,12 @@ This project showcases a real-world solution leveraging **Microsoft Fabric**, **
 
 1. **Data Ingestion**:
    - Data is extracted from the **AdventureWorks** database.
-   - Supports **Change Data Capture (CDC)** via Eventstream connectors.
-   - Pipelines built with **Dataflows (Gen2)** and **Data Factory Pipelines**.
+   - Supports **Full and Delta Integration**.
+   - Pipelines built with  **Data Factory Pipelines**.
 
 2. **Data Transformation**:
    - Utilizes **Notebooks** for transforming and processing delta datasets.
-   - Merges metadata from **Azure SQL Database** and **Lakehouse**.
+   - Merges metadata from **SQL Database** and **Lakehouse**.
 
 3. **AI-Driven Insights**:
    - Includes reconciliation and validation for data consistency.
