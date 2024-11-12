@@ -42,35 +42,28 @@ This project showcases a real-world solution leveraging **Microsoft Fabric**, **
   - `Delta_Join_Parquet.Notebook`: Identifies and processes daily delta updates for ingestion, using the fields that individualize the records of each table.
   - `Get Columns.Notebook`: Retrieves metadata for columns across source system.
   - `Initialize log ctrl file.Notebook`: Sets up and initializes logging controls for ingestion.
-  - `Load Lakehouse Metadata.Notebook`: Loads and manages metadata specific to the Lakehouse.
   - `Load_System_Tables.Notebook`: Automates the loading of reference and system tables.
-  - `Load_fabric_metadata.Notebook`: Handles ingestion and management of Fabric metadata.
+  - `Load_fabric_metadata.Notebook`: Creates the metadata control table in order to parameterize the pipelines.
   - `Reconciliation Check.Notebook`: Ensures consistency and validation of ingested data.
-  - `Reconciliation Checks Total.Notebook`: Conducts comprehensive validation across multiple datasets.
-  - `Truncate Table.Notebook`: Automates table truncation processes for refresh scenarios.
-  - `Update_fabric_metadata_table.Notebook`: Updates metadata tables specific to Microsoft Fabric.
+  - `Reconciliation Checks Total.Notebook`: Aggregation of reconciliation checks regarding all loaded tables.
+  - `Truncate Table.Notebook`: Used for re-run purposes of the source system daily counts.
+  - `Update_fabric_metadata_table.Notebook`: Updates metadata table after ingestion process is completed.
+  - `Log.Notebook`: Monitors processes for debugging and auditing.
 
 - **Pipelines**:
+  - `Load_System_Tables`: Manages the ingestion of system and reference tables.
+  - `Full_Load_LH`: Executes a full load data for scenarios requiring complete dataset ingestion, bypassing delta constraints.
   - `Delta_Load_LH`: Handles incremental delta loading for the Lakehouse environment.
-  - `Load_System_Tables.DataPipeline`: Manages the ingestion of system and reference tables.
-  - `Orchestration`: Oversees and automates workflow execution.
   - `Load_Counts_Daily`: Automates daily ingestion and metadata tracking processes.
-  - `FullLoad.DataPipeline`: Executes a full data load for scenarios requiring complete dataset ingestion, bypassing delta constraints.
+  - `Orchestration`: Oversees and automates workflow execution.
+    
 
-- **Supporting Files**:
-  - `Log.Notebook`: Tracks processes for debugging and auditing.
-  - Configuration scripts: Define pipeline parameters and settings.
-  - Metadata and DDL scripts: Provide schema and table setup instructions.
-
-This repository provides the foundation for building an integrated, scalable data platform using Microsoft Fabric and Azure SQL Database.
-
-
----
+This repository provides the foundation for building an integrated, scalable data platform using Microsoft Fabric and on-premise SQL Server Database.
 
 ## Technologies Used
 
 - **Microsoft Fabric**: Seamlessly integrates Lakehouse and SQL services.
-- **SQL Database**: Centralized data storage for query and analysis.
+- **SQL Server Database**: Centralized data storage for query and analysis.
 - **AdventureWorks**: Rich on-premise dataset for demonstration.
 - **AI**: Enable advanced insights.
 - **Data Factory Pipelines**: Automate data ingestion and processing.
