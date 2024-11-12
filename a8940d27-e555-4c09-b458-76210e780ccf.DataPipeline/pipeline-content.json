@@ -1,0 +1,74 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "name": "Invoke Load_counts_daily_LH",
+        "type": "ExecutePipeline",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [],
+        "policy": {
+          "secureInput": false
+        },
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "0fbe40a2-b942-4e83-a24e-2440b56cce38",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {}
+        }
+      },
+      {
+        "name": "Invoke Delta_load_LH",
+        "type": "ExecutePipeline",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Invoke Load_counts_daily_LH",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "secureInput": false
+        },
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "91a0e3ff-1622-4e92-b175-29453f702379",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {}
+        }
+      },
+      {
+        "name": "Invoke Full_Load_LH",
+        "type": "ExecutePipeline",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Invoke Load_counts_daily_LH",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "secureInput": false
+        },
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "31aec452-d460-40ac-8d10-2a23aa93ddfa",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {}
+        }
+      }
+    ]
+  }
+}

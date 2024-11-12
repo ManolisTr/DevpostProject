@@ -195,15 +195,24 @@
                     "type": "string"
                   },
                   "pipeline": {
-                    "value": "Delta Load",
+                    "value": {
+                      "value": "@pipeline().parameters.pipeline",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filepath": {
-                    "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+                    "value": {
+                      "value": "@pipeline().parameters.filepath",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filename": {
-                    "value": "tmp_ctrl_log_delta",
+                    "value": {
+                      "value": "@pipeline().parameters.filename",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   }
                 }
@@ -257,7 +266,10 @@
                     "type": "string"
                   },
                   "task": {
-                    "value": "Transfer to LH",
+                    "value": {
+                      "value": "@pipeline().parameters.task_transfer_to_LH",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "log_id": {
@@ -268,15 +280,24 @@
                     "type": "string"
                   },
                   "pipeline": {
-                    "value": "Delta Load",
+                    "value": {
+                      "value": "@pipeline().parameters.pipeline",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filepath": {
-                    "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+                    "value": {
+                      "value": "@pipeline().parameters.filepath",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filename": {
-                    "value": "tmp_ctrl_log_delta",
+                    "value": {
+                      "value": "@pipeline().parameters.filename",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "reconciliation_status": {
@@ -389,7 +410,10 @@
                     "type": "string"
                   },
                   "suffix": {
-                    "value": "_delta",
+                    "value": {
+                      "value": "@pipeline().parameters.suffix",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   }
                 }
@@ -439,7 +463,10 @@
                     "type": "string"
                   },
                   "task": {
-                    "value": "Copy Data to staging table of Lakehouse",
+                    "value": {
+                      "value": "@pipeline().parameters.task_copy_to_LH",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "log_id": {
@@ -450,15 +477,24 @@
                     "type": "string"
                   },
                   "pipeline": {
-                    "value": "Delta Load",
+                    "value": {
+                      "value": "@pipeline().parameters.pipeline",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filename": {
-                    "value": "tmp_ctrl_log_delta",
+                    "value": {
+                      "value": "@pipeline().parameters.filename",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filepath": {
-                    "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+                    "value": {
+                      "value": "@pipeline().parameters.filepath",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "rows_cnt": {
@@ -570,7 +606,10 @@
           "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
           "parameters": {
             "suffix": {
-              "value": "_delta",
+              "value": {
+                "value": "@pipeline().parameters.suffix",
+                "type": "Expression"
+              },
               "type": "string"
             }
           }
@@ -600,6 +639,32 @@
         }
       }
     ],
+    "parameters": {
+      "pipeline": {
+        "type": "string",
+        "defaultValue": "Delta Load"
+      },
+      "filename": {
+        "type": "string",
+        "defaultValue": "tmp_ctrl_log_delta"
+      },
+      "filepath": {
+        "type": "string",
+        "defaultValue": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/"
+      },
+      "suffix": {
+        "type": "string",
+        "defaultValue": "_delta"
+      },
+      "task_copy_to_LH": {
+        "type": "string",
+        "defaultValue": "Copy Data to staging table of Lakehouse"
+      },
+      "task_transfer_to_LH": {
+        "type": "string",
+        "defaultValue": "Transfer to LH"
+      }
+    },
     "variables": {
       "schema_name": {
         "type": "String"

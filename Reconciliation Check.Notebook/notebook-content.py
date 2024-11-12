@@ -27,7 +27,7 @@ table_name = 'person'
 destination_table = 'person_person'
 filepath = 'abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/'
 filename = 'tmp_ctrl_log'
-suffix = '_delta'
+suffix = ''
 
 # METADATA ********************
 
@@ -193,19 +193,6 @@ if exitVal:
     mssparkutils.notebook.exit("Succeeded")
 else:
     mssparkutils.notebook.exit("Failed")
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# MARKDOWN ********************
-
-
-# CELL ********************
-
 
 # METADATA ********************
 

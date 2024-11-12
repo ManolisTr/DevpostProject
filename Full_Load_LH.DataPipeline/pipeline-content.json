@@ -153,16 +153,25 @@
                     },
                     "type": "string"
                   },
-                  "pipeline": {
-                    "value": "Full Load",
-                    "type": "string"
-                  },
                   "filename": {
-                    "value": "tmp_ctrl_log",
+                    "value": {
+                      "value": "@pipeline().parameters.filename",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   },
                   "filepath": {
-                    "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+                    "value": {
+                      "value": "@pipeline().parameters.filepath",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "pipeline": {
+                    "value": {
+                      "value": "@pipeline().parameters.pipeline",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   }
                 }
@@ -211,12 +220,22 @@
                     },
                     "type": "string"
                   },
-                  "filepath": {
-                    "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+                  "suffix": {
+                    "value": "",
                     "type": "string"
                   },
                   "filename": {
-                    "value": "tmp_ctrl_log",
+                    "value": {
+                      "value": "@pipeline().parameters.filename",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "filepath": {
+                    "value": {
+                      "value": "@pipeline().parameters.filepath",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   }
                 }
@@ -354,21 +373,30 @@
                     },
                     "type": "string"
                   },
-                  "pipeline": {
-                    "value": "Full Load",
-                    "type": "string"
-                  },
-                  "filename": {
-                    "value": "tmp_ctrl_log",
-                    "type": "string"
-                  },
-                  "filepath": {
-                    "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
-                    "type": "string"
-                  },
                   "rows_cnt": {
                     "value": {
                       "value": "@if(empty(activity('Copy raw data from source system').output.errors), activity('Copy raw data from source system').output.rowsCopied, -100)",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "filename": {
+                    "value": {
+                      "value": "@pipeline().parameters.filename",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "filepath": {
+                    "value": {
+                      "value": "@pipeline().parameters.filepath",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "pipeline": {
+                    "value": {
+                      "value": "@pipeline().parameters.pipeline",
                       "type": "Expression"
                     },
                     "type": "string"
@@ -394,12 +422,12 @@
           "notebookId": "954fcc1d-ef89-40d5-b220-d782081984ca",
           "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
           "parameters": {
-            "filepath": {
-              "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
-              "type": "string"
-            },
             "filename": {
               "value": "tmp_ctrl_log",
+              "type": "string"
+            },
+            "filepath": {
+              "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
               "type": "string"
             }
           }
@@ -428,15 +456,24 @@
           "workspaceId": "63a7c4a0-7e46-4131-b5ee-0b33d69e52eb",
           "parameters": {
             "filepath": {
-              "value": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/",
+              "value": {
+                "value": "@pipeline().parameters.filepath",
+                "type": "Expression"
+              },
               "type": "string"
             },
             "filename": {
-              "value": "tmp_ctrl_log",
+              "value": {
+                "value": "@pipeline().parameters.filename",
+                "type": "Expression"
+              },
               "type": "string"
             },
             "LH": {
-              "value": "DEV_Ingestion_DP_Lakehouse",
+              "value": {
+                "value": "@pipeline().parameters.LH",
+                "type": "Expression"
+              },
               "type": "string"
             }
           }
@@ -466,6 +503,24 @@
         }
       }
     ],
+    "parameters": {
+      "pipeline": {
+        "type": "string",
+        "defaultValue": "Full Load"
+      },
+      "filename": {
+        "type": "string",
+        "defaultValue": "tmp_ctrl_log"
+      },
+      "filepath": {
+        "type": "string",
+        "defaultValue": "abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/"
+      },
+      "LH": {
+        "type": "string",
+        "defaultValue": "DEV_Ingestion_DP_Lakehouse"
+      }
+    },
     "variables": {
       "schema_name": {
         "type": "String"
@@ -480,12 +535,6 @@
         "type": "String"
       },
       "version": {
-        "type": "String"
-      },
-      "LH_name": {
-        "type": "String"
-      },
-      "LH_schema": {
         "type": "String"
       },
       "CopyColumns": {

@@ -145,27 +145,33 @@ if __name__ == '__main__':
     data_list = [final_data]
 
     # Create a queue
-    queue = multiprocessing.Queue()
+    try:
+        queue = multiprocessing.Queue()
 
-    file_ =  filepath + filename
-    # Create a writer process
-    writer_process = multiprocessing.Process(target=writer, args=(queue, file_))
-    writer_process.start()
+        file_ =  filepath + filename
+        # Create a writer process
+        try:
+            writer_process = multiprocessing.Process(target=writer, args=(queue, file_))
+            writer_process.start()
 
-    # Create worker processes
-    processes = []
-    for data in data_list:
-        p = multiprocessing.Process(target=worker, args=(data, queue))
-        processes.append(p)
-        p.start()
+            # Create worker processes
+            processes = []
+            for data in data_list:
+                p = multiprocessing.Process(target=worker, args=(data, queue))
+                processes.append(p)
+                p.start()
 
-    # Wait for worker processes to finish
-    for p in processes:
-        p.join()
+            # Wait for worker processes to finish
+            for p in processes:
+                p.join()
 
-    # Signal the writer process to finish
-    queue.put(None)
-    writer_process.join()
+            # Signal the writer process to finish
+            queue.put(None)
+            writer_process.join()
+        except:
+            print('An error occured when creating the writer process')
+    except:
+        print('An error occured when creating the queue')
 
 # METADATA ********************
 
