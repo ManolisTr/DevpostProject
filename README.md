@@ -75,7 +75,7 @@ This repository provides the foundation for building an integrated, scalable dat
 The workflow for this project follows a structured sequence to ensure efficient data handling, transformation, and analysis:
 
 0. **DDL Generation from On-Premise Database**:
-   - Extracts the DDL definitions of system tables from the **AdventureWorks** on-premise database.
+   - Extracts the DDL definitions of source tables from the **AdventureWorks** on-premise database.
    - Automatically generates equivalent DDL scripts for the Microsoft Fabric environment.
    - Notebooks are used to analyze and modify the data types as needed to ensure compatibility with Fabric's data processing capabilities.
 
@@ -105,7 +105,7 @@ This end-to-end workflow enables robust and scalable data operations, delivering
 
 - Azure Subscription with Microsoft Fabric enabled.
 - AdventureWorks Database (download from [here](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/adventure-works)).
-- Azure SQL Database or SQL Server for cloud storage.
+- Microsoft Getway (download from [here](https://www.microsoft.com/en-us/download/details.aspx?id=53127)).
 
 ### Steps to Deploy the Project
 
@@ -118,14 +118,11 @@ This end-to-end workflow enables robust and scalable data operations, delivering
    - **AdventureWorks Database**:
      - Download the AdventureWorks database from [AdventureWorks GitHub](https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/adventure-works).
      - Configure it as the on-premise source.
-   - **Azure SQL Database**:
-     - Set up an Azure SQL Database instance for cloud data integration.
    - **Pipelines and Connectors**:
      - Deploy the Data Factory Pipelines to handle data ingestion and transformation.
-     - Use Eventstream connectors for Change Data Capture (CDC) support.
 
 3. **Run Pipelines**
    - Trigger the orchestration pipeline to start the data ingestion process.
-   - Monitor the transformation and reconciliation notebooks to validate data accuracy.
+   - Monitor the transformation and reconciliation mechanisms to validate data accuracy.
 
    
