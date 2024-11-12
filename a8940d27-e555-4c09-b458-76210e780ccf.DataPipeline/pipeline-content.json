@@ -2,28 +2,35 @@
   "properties": {
     "activities": [
       {
+        "type": "ExecutePipeline",
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "bda8d72f-1d75-4328-be4a-59af152827c3",
+            "type": "PipelineReference"
+          },
+          "parameters": {},
+          "waitOnCompletion": true
+        },
+        "policy": {
+          "secureInput": false
+        },
         "name": "Invoke Load_counts_daily_LH",
+        "dependsOn": []
+      },
+      {
         "type": "ExecutePipeline",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
-        "dependsOn": [],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "893e534e-0d2f-4cb4-a7bb-f0b11f00255f",
+            "type": "PipelineReference"
+          },
+          "parameters": {},
+          "waitOnCompletion": true
+        },
         "policy": {
           "secureInput": false
         },
-        "typeProperties": {
-          "pipeline": {
-            "referenceName": "0fbe40a2-b942-4e83-a24e-2440b56cce38",
-            "type": "PipelineReference"
-          },
-          "waitOnCompletion": true,
-          "parameters": {}
-        }
-      },
-      {
         "name": "Invoke Delta_load_LH",
-        "type": "ExecutePipeline",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "Invoke Load_counts_daily_LH",
@@ -31,24 +38,22 @@
               "Succeeded"
             ]
           }
-        ],
-        "policy": {
-          "secureInput": false
-        },
-        "typeProperties": {
-          "pipeline": {
-            "referenceName": "91a0e3ff-1622-4e92-b175-29453f702379",
-            "type": "PipelineReference"
-          },
-          "waitOnCompletion": true,
-          "parameters": {}
-        }
+        ]
       },
       {
-        "name": "Invoke Full_Load_LH",
         "type": "ExecutePipeline",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "55350775-6597-437e-8961-d04135d67955",
+            "type": "PipelineReference"
+          },
+          "parameters": {},
+          "waitOnCompletion": true
+        },
+        "policy": {
+          "secureInput": false
+        },
+        "name": "Invoke Full_Load_LH",
         "dependsOn": [
           {
             "activity": "Invoke Load_counts_daily_LH",
@@ -56,18 +61,7 @@
               "Succeeded"
             ]
           }
-        ],
-        "policy": {
-          "secureInput": false
-        },
-        "typeProperties": {
-          "pipeline": {
-            "referenceName": "31aec452-d460-40ac-8d10-2a23aa93ddfa",
-            "type": "PipelineReference"
-          },
-          "waitOnCompletion": true,
-          "parameters": {}
-        }
+        ]
       }
     ]
   }

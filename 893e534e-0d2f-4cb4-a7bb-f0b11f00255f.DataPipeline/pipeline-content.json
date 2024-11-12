@@ -219,7 +219,7 @@
               }
             },
             {
-              "name": "Log Transfer to DWH",
+              "name": "Log Transfer to LH",
               "type": "TridentNotebook",
               "dependsOn": [
                 {

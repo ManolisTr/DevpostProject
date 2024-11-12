@@ -121,18 +121,6 @@ parquetFilePath = f"{lakehousePath}/Files/incremental/{sourceSystem}/filename={f
 
 # CELL ********************
 
-print(parquetFilePath)
-print(deltaTablePath)
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 pk_stm = fabric_metadata_df.select(col("PRIMARY_KEY")).filter((col("SOURCE_TABLE") == table_name) & (col("SOURCE_SCHEMA") == schema_name)).collect()[0][0]
 
 # METADATA ********************
@@ -156,34 +144,11 @@ stg_argument_list = ['stg.' + item for item in pk_stm.split(',')]
 
 # CELL ********************
 
-print(dst_argument_list)
-print(stg_argument_list)
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 # Create a list of strings with '=' in between
 combined_list = [f"{a} = {b}" for a, b in zip(stg_argument_list, dst_argument_list)]
 
 # Join the list into a single string with a separator (e.g., ', ' or ' AND ')
 mergeKeyExpr = ' and '.join(combined_list)
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# df2 = spark.read.parquet(parquetFilePath)
 
 # METADATA ********************
 
@@ -252,44 +217,10 @@ mssparkutils.notebook.exit(str(result))
 
 # CELL ********************
 
-print(operationMetrics)
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 filename = f'{lakehousePath}/Files/tmp_ctrl_log_delta'
 print(filename)
 df = spark.read.option("delimiter", ",").option("encoding", "utf-8").parquet(filename, header=True)
 df.createOrReplaceTempView(f"temp_aggregated_metadata_delta_load")
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-display(df)
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-df2 = spark.read.parquet('abfss://Ingestion_DP_DEV_workspace@onelake.dfs.fabric.microsoft.com/DEV_Ingestion_DP_Lakehouse.Lakehouse/Files/AdventureWorks/filename=humanresources_department/execution_date=2024-10-23/humanresources_department')
-display(df2)
 
 # METADATA ********************
 
